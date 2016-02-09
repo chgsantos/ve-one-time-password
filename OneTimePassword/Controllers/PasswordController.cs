@@ -18,7 +18,10 @@ namespace OneTimePassword.Controllers
         /// <returns></returns>
         public JsonResult Initialize()
         {
-            return Json(true);
+            return Json(new {
+                status = true,
+                data = ""
+            });
         }
 
         /// <summary>
@@ -28,7 +31,11 @@ namespace OneTimePassword.Controllers
         /// <returns>The generated password for the given User ID</returns>
         public JsonResult GeneratePassword(Guid userId)
         {
-            return Json("123456");
+            return Json(new
+            {
+                status = true,
+                data = 123456
+            });
         }
 
         /// <summary>
@@ -39,7 +46,10 @@ namespace OneTimePassword.Controllers
         /// <returns>Validity of the password</returns>
         public JsonResult ValidatePassword(Guid userId, String password)
         {
-            return Json(true);
+            return Json(new {
+                status = true,
+                data = true
+            });
         }
     }
 }
