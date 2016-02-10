@@ -11,6 +11,7 @@ namespace OneTimePassword.Controllers
     {
         // Declare the list of Users
         private static List<User> _users = new List<User>();
+        private int _passwordTimeoutSeconds = 30;
 
         /// <summary>
         /// Initializes the app with some users
@@ -68,7 +69,7 @@ namespace OneTimePassword.Controllers
             else
             {
                 // If user was found
-                if (user.PasswordDate != null && user.PasswordDate.Value.AddSeconds(30) > DateTime.UtcNow)
+                if (user.PasswordDate != null && user.PasswordDate.Value.AddSeconds(_passwordTimeoutSeconds) > DateTime.UtcNow)
                 {
                     // If password is valid yet, returns the same password
                     return JSendResult(true, user.Password);
@@ -92,7 +93,36 @@ namespace OneTimePassword.Controllers
         /// <returns>Validity of the password</returns>
         public JsonResult ValidatePassword(Guid userId, String password)
         {
-            return JSendResult(true);
+            // Search the User by ID
+            var user = (
+                from i
+                in _users
+                where i.Id.Equals(userId)
+                select i
+            ).FirstOrDefault();
+
+            if (user == null)
+            {
+                // If no user was found
+                return JSendResult(false, null, "User not found");
+            }
+            else
+            {
+                // If user was found
+                if (user.PasswordDate != null && user.PasswordDate.Value.AddSeconds(_passwordTimeoutSeconds) > DateTime.UtcNow)
+                {
+                    // If password is valid yet, clears the password (one time use only) and returns true
+                    user.Password = null;
+                    user.PasswordDate = null;
+
+                    return JSendResult(true, user.Password);
+                }
+                else
+                {
+                    // If password is invalid or there is no password, returns false
+                    return JSendResult(false, user.Password);
+                }
+            }
         }
 
         /// <summary>

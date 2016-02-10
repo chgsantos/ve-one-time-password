@@ -14,7 +14,7 @@ namespace OneTimePassword.Controllers.Tests
     public class PasswordControllerTests
     {
         private static Guid validUserId = Guid.Parse("a287509a-d517-43dd-972a-ff10798d014c");
-        private static Guid invalidUserId = Guid.Parse("04361436-950b-42e1-9501-571344d70b4d");
+        private static Guid invalidUserId = Guid.Empty;
 
         /// <summary>
         /// Checks the Initialize action
@@ -40,6 +40,7 @@ namespace OneTimePassword.Controllers.Tests
         public void GeneratePasswordTest_ValidUser()
         {
             // Arrange
+            InitializeTest();
             PasswordController controller = new PasswordController();
 
             // Act
@@ -58,6 +59,7 @@ namespace OneTimePassword.Controllers.Tests
         public void GeneratePasswordTest_InvalidUser()
         {
             // Arrange
+            InitializeTest();
             PasswordController controller = new PasswordController();
 
             // Act
@@ -75,6 +77,7 @@ namespace OneTimePassword.Controllers.Tests
         public void ValidatePasswordTest_InvalidUser()
         {
             // Arrange
+            InitializeTest();
             PasswordController controller = new PasswordController();
 
             // Act
@@ -92,6 +95,7 @@ namespace OneTimePassword.Controllers.Tests
         public void ValidatePasswordTest_ValidPassword()
         {
             // Arrange
+            InitializeTest();
             PasswordController controller = new PasswordController();
 
             // Act
@@ -116,6 +120,7 @@ namespace OneTimePassword.Controllers.Tests
         public void ValidatePasswordTest_ValidPasswordTwoTimes()
         {
             // Arrange
+            InitializeTest();
             PasswordController controller = new PasswordController();
 
             // Act
@@ -145,6 +150,7 @@ namespace OneTimePassword.Controllers.Tests
         public void ValidatePasswordTest_InvalidPassword()
         {
             // Arrange
+            InitializeTest();
             PasswordController controller = new PasswordController();
 
             // Act
@@ -162,6 +168,7 @@ namespace OneTimePassword.Controllers.Tests
         public void ValidatePasswordTest_ExpiredPassword()
         {
             // Arrange
+            InitializeTest();
             PasswordController generateController = new PasswordController();
 
             // Act
@@ -171,22 +178,23 @@ namespace OneTimePassword.Controllers.Tests
             dynamic passwordData = passwordResult.Data;
             String password = passwordData.data;
 
-            // uses the password with one minute delay
-            dynamic data = new { };
+            // creates an UtcNow date with 31 seconds delay
+            var a = DateTime.UtcNow;
+            DateTime delayedDate = DateTime.UtcNow.AddSeconds(31);
+
+            // uses a mock context that makes the DateTime.UtcNow return the delayed date
             Smock.Run(context =>
             {
-                context.Setup(() => DateTime.UtcNow).Returns(DateTime.UtcNow.AddMinutes(1));
+                context.Setup(() => DateTime.UtcNow).Returns(delayedDate);
 
+                InitializeTest();
                 PasswordController validateController = new PasswordController();
                 JsonResult result = validateController.ValidatePassword(validUserId, password) as JsonResult;
-                data = result.Data;
+                dynamic data = result.Data;
+
+                // Assert
+                Assert.AreEqual(data.status, false);
             });
-
-            // Assert
-            Assert.AreEqual(data.status, false);
-
-            // Assert
-            Assert.Fail();
         }
     }
 }
