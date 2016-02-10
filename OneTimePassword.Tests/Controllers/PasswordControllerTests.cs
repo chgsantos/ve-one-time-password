@@ -1,5 +1,4 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 using OneTimePassword.Controllers;
 using Smocks;
 using System;
@@ -32,7 +31,6 @@ namespace OneTimePassword.Controllers.Tests
 
             // Assert
             Assert.AreEqual(data.status, true);
-            Assert.AreEqual(data.data, "");
         }
 
         /// <summary>
@@ -154,7 +152,7 @@ namespace OneTimePassword.Controllers.Tests
             dynamic data = result.Data;
 
             // Assert
-            Assert.AreEqual(data.status, true);
+            Assert.AreEqual(data.status, false);
         }
 
         /// <summary>
