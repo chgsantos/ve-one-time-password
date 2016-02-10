@@ -66,7 +66,7 @@ namespace OneTimePassword.Controllers
             else
             {
                 // If user was found
-                if (user.PasswordDate != null && user.PasswordDate.Value.AddSeconds(_passwordTimeoutSeconds) > DateTime.UtcNow)
+                if (user.PasswordGeneratedDate != null && user.PasswordGeneratedDate.Value.AddSeconds(_passwordTimeoutSeconds) > DateTime.UtcNow)
                 {
                     // If password is valid yet, returns the same password
                     return JSendResult(true, user.Password);
@@ -74,9 +74,26 @@ namespace OneTimePassword.Controllers
                 else
                 {
                     // If password is invalid or there is no password, generates a new password
+
+                    // gets the current passwords and verify if the generated password is unique
                     Random random = new Random();
-                    user.Password = random.Next(100000, 999999).ToString();
-                    user.PasswordDate = DateTime.UtcNow;
+                    String newPassword = "";
+                    List<string> currentPasswords = (
+                        from i
+                        in _users
+                        where i.PasswordGeneratedDate != null && i.PasswordGeneratedDate.Value.AddSeconds(_passwordTimeoutSeconds) > DateTime.UtcNow
+                        select i.Password
+                    ).ToList();
+                    do
+                    {
+                        newPassword = random.Next(100000, 999999).ToString();
+                    } while (currentPasswords.Contains(newPassword));
+
+                    // sets the new password to the user
+                    user.Password = newPassword;
+                    user.PasswordGeneratedDate = DateTime.UtcNow;
+
+                    // returns
                     return JSendResult(true, user.Password);
                 }
             }
@@ -106,11 +123,11 @@ namespace OneTimePassword.Controllers
             else
             {
                 // If user was found
-                if (user.PasswordDate != null && user.PasswordDate.Value.AddSeconds(_passwordTimeoutSeconds) > DateTime.UtcNow)
+                if (user.PasswordGeneratedDate != null && user.PasswordGeneratedDate.Value.AddSeconds(_passwordTimeoutSeconds) > DateTime.UtcNow)
                 {
                     // If password is valid yet, clears the password (one time use only) and returns true
                     user.Password = null;
-                    user.PasswordDate = null;
+                    user.PasswordGeneratedDate = null;
 
                     return JSendResult(true, user.Password);
                 }

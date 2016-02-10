@@ -17,6 +17,6 @@ namespace OneTimePassword.Models.Entities
         public String Password { get; set; }
 
         // Password generated date
-        public DateTime? PasswordDate { get; set; }
+        public DateTime? PasswordGeneratedDate { get; set; }
     }
 }
