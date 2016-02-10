@@ -1,5 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 using OneTimePassword.Controllers;
+using Smocks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -162,10 +164,28 @@ namespace OneTimePassword.Controllers.Tests
         public void ValidatePasswordTest_ExpiredPassword()
         {
             // Arrange
-            PasswordController controller = new PasswordController();
+            PasswordController generateController = new PasswordController();
 
             // Act
-            
+
+            // generates the password
+            JsonResult passwordResult = generateController.GeneratePassword(validUserId) as JsonResult;
+            dynamic passwordData = passwordResult.Data;
+            String password = passwordData.data;
+
+            // uses the password with one minute delay
+            dynamic data = new { };
+            Smock.Run(context =>
+            {
+                context.Setup(() => DateTime.UtcNow).Returns(DateTime.UtcNow.AddMinutes(1));
+
+                PasswordController validateController = new PasswordController();
+                JsonResult result = validateController.ValidatePassword(validUserId, password) as JsonResult;
+                data = result.Data;
+            });
+
+            // Assert
+            Assert.AreEqual(data.status, false);
 
             // Assert
             Assert.Fail();
