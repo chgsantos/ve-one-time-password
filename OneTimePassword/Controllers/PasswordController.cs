@@ -14,10 +14,9 @@ namespace OneTimePassword.Controllers
         private int _passwordTimeoutSeconds = 30;
 
         /// <summary>
-        /// Initializes the app with some users
+        /// Constructor that initializes _users list with some users
         /// </summary>
-        /// <returns></returns>
-        public JsonResult Initialize()
+        public PasswordController()
         {
             if (_users.Count == 0)
             {
@@ -42,8 +41,6 @@ namespace OneTimePassword.Controllers
                     }
                 );
             }
-
-            return JSendResult(true);
         }
 
         /// <summary>
